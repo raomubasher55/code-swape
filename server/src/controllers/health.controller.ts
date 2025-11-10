@@ -1,6 +1,6 @@
 import type { Request, Response } from 'express'
-import type { HealthResponse } from '../types/terminal.types'
-import terminalService from '../services/terminal.service'
+import type { HealthResponse } from '../types/terminal.types.js'
+import terminalService from '../services/terminal.service.js'
 
 class HealthController {
   /**

@@ -1,5 +1,5 @@
 import type { CorsOptions } from 'cors'
-import config from './env'
+import config from './env.js'
 
 export const corsOptions: CorsOptions = {
   origin: config.cors.origin,

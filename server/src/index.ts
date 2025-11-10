@@ -5,21 +5,21 @@ import { Server } from 'socket.io'
 import cors from 'cors'
 
 // Configuration
-import config from './config/env'
-import corsOptions from './config/cors'
+import config from './config/env.js'
+import corsOptions from './config/cors.js'
 
 // Routes
-import routes from './routes'
+import routes from './routes/index.js'
 
 // Services
-import websocketService from './services/websocket.service'
-import terminalService from './services/terminal.service'
+import websocketService from './services/websocket.service.js'
+import terminalService from './services/terminal.service.js'
 
 // Middleware
-import { errorHandler, notFoundHandler } from './middleware/error.middleware'
+import { errorHandler, notFoundHandler } from './middleware/error.middleware.js'
 
 // Utils
-import logger from './utils/logger'
+import logger from './utils/logger.js'
 
 // Initialize Express app
 const app = express()

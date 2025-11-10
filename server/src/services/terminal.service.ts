@@ -1,8 +1,8 @@
 import { spawn, IPty } from 'node-pty'
 import type { Socket } from 'socket.io'
-import type { TerminalSession, ResizeData } from '../types/terminal.types'
-import config from '../config/env'
-import logger from '../utils/logger'
+import type { TerminalSession, ResizeData } from '../types/terminal.types.js'
+import config from '../config/env.js'
+import logger from '../utils/logger.js'
 
 class TerminalService {
   private sessions: Map<string, TerminalSession> = new Map()

@@ -1,7 +1,7 @@
 import type { Server, Socket } from 'socket.io'
-import terminalService from './terminal.service'
-import type { ResizeData } from '../types/terminal.types'
-import logger from '../utils/logger'
+import terminalService from './terminal.service.js'
+import type { ResizeData } from '../types/terminal.types.js'
+import logger from '../utils/logger.js'
 
 class WebSocketService {
   /**

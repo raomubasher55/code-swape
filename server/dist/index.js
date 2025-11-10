@@ -3,82 +3,62 @@ import express from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import cors from 'cors';
-import { spawn } from 'node-pty';
+// Configuration
+import config from './config/env.js';
+import corsOptions from './config/cors.js';
+// Routes
+import routes from './routes/index.js';
+// Services
+import websocketService from './services/websocket.service.js';
+import terminalService from './services/terminal.service.js';
+// Middleware
+import { errorHandler, notFoundHandler } from './middleware/error.middleware.js';
+// Utils
+import logger from './utils/logger.js';
+// Initialize Express app
 const app = express();
 const server = createServer(app);
-// Configure CORS for Socket.IO
-const allowedOrigins = process.env.CORS_ORIGIN
-    ? [process.env.CORS_ORIGIN, "http://localhost:5173"]
-    : ["http://localhost:5173"];
+// Configure Socket.IO with CORS
 const io = new Server(server, {
     cors: {
-        origin: allowedOrigins,
-        methods: ["GET", "POST"],
-        credentials: true
-    }
+        origin: config.cors.origin,
+        methods: ['GET', 'POST'],
+        credentials: true,
+    },
 });
-app.use(cors({
-    origin: allowedOrigins,
-    credentials: true
-}));
+// Middleware
+app.use(cors(corsOptions));
 app.use(express.json());
-// Health check endpoint
-app.get('/health', (req, res) => {
-    res.json({ status: 'ok', message: 'VPS Terminal Server is running' });
+app.use(express.urlencoded({ extended: true }));
+// Routes
+app.use('/', routes);
+// Error handling
+app.use(notFoundHandler);
+app.use(errorHandler);
+// Initialize WebSocket service
+websocketService.initialize(io);
+// Graceful shutdown
+const gracefulShutdown = () => {
+    logger.info('Received shutdown signal, closing server...');
+    server.close(() => {
+        logger.info('HTTP server closed');
+        terminalService.cleanup();
+        process.exit(0);
+    });
+    // Force close after 10 seconds
+    setTimeout(() => {
+        logger.error('Forced shutdown after timeout');
+        process.exit(1);
+    }, 10000);
+};
+process.on('SIGTERM', gracefulShutdown);
+process.on('SIGINT', gracefulShutdown);
+// Start server
+server.listen(config.port, () => {
+    logger.info(`🚀 VPS Terminal Server running on port ${config.port}`);
+    logger.info(`🌐 CORS enabled for ${config.cors.origin}`);
+    logger.info(`📡 WebSocket endpoint: ws://localhost:${config.port}`);
+    logger.info(`🔧 Environment: ${config.nodeEnv}`);
 });
-// Store active terminal sessions
-const terminals = new Map();
-io.on('connection', (socket) => {
-    console.log(`Client connected: ${socket.id}`);
-    // Spawn a new PTY session for this client
-    const ptyProcess = spawn('/bin/bash', [], {
-        name: 'xterm-color',
-        cols: 80,
-        rows: 24,
-        cwd: process.env.HOME || '/root',
-        env: process.env,
-    });
-    // Store the terminal session
-    terminals.set(socket.id, ptyProcess);
-    // Send initial welcome message
-    socket.emit('output', '\r\n🚀 Welcome to Web-Based VPS Terminal\r\n');
-    socket.emit('output', 'Type commands and see them execute in real-time!\r\n\r\n');
-    // Handle PTY output - send to client
-    ptyProcess.onData((data) => {
-        socket.emit('output', data);
-    });
-    // Handle PTY exit
-    ptyProcess.onExit(({ exitCode, signal }) => {
-        console.log(`PTY process exited with code ${exitCode}, signal ${signal}`);
-        socket.emit('output', `\r\n\r\n💀 Terminal session ended (exit code: ${exitCode})\r\n`);
-        terminals.delete(socket.id);
-    });
-    // Handle client input - send to PTY
-    socket.on('input', (data) => {
-        if (terminals.has(socket.id)) {
-            ptyProcess.write(data);
-        }
-    });
-    // Handle client disconnect
-    socket.on('disconnect', () => {
-        console.log(`Client disconnected: ${socket.id}`);
-        if (terminals.has(socket.id)) {
-            const ptyProcess = terminals.get(socket.id);
-            ptyProcess.kill();
-            terminals.delete(socket.id);
-        }
-    });
-    // Handle terminal resize
-    socket.on('resize', ({ cols, rows }) => {
-        if (terminals.has(socket.id)) {
-            ptyProcess.resize(cols, rows);
-        }
-    });
-});
-const PORT = process.env.PORT || 3001;
-server.listen(PORT, () => {
-    console.log(`🚀 VPS Terminal Server running on port ${PORT}`);
-    console.log(`🌐 CORS enabled for http://localhost:5173`);
-    console.log(`📡 WebSocket endpoint: ws://localhost:${PORT}`);
-});
+export { app, server, io };
 //# sourceMappingURL=index.js.map
