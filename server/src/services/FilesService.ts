@@ -2,6 +2,7 @@ import { readdir, stat, readFile, writeFile, mkdir, rename, unlink, rmdir } from
 import { join, dirname } from 'path'
 import { getExtension, sortFileNodes } from '../utils/fileHelpers.js'
 import { validatePath, BASE_PATH } from '../middleware/pathValidation.js'
+import { BadRequestError, NotFoundError, ConflictError } from '../errors/AppError.js'
 import logger from '../utils/logger.js'
 
 export interface FileNode {
@@ -63,7 +64,7 @@ export class FilesService {
 
     const stats = await stat(safePath)
     if (!stats.isDirectory()) {
-      throw new Error('Path is not a directory')
+      throw new BadRequestError('Path is not a directory')
     }
 
     const children = await this.readDirectory(safePath)
@@ -85,7 +86,7 @@ export class FilesService {
 
     const stats = await stat(safePath)
     if (!stats.isFile()) {
-      throw new Error('Path is not a file')
+      throw new BadRequestError('Path is not a file')
     }
 
     const content = await readFile(safePath, 'utf-8')
@@ -106,7 +107,7 @@ export class FilesService {
 
     const stats = await stat(safePath)
     if (!stats.isFile()) {
-      throw new Error('Path is not a file')
+      throw new BadRequestError('Path is not a file')
     }
 
     await writeFile(safePath, content, 'utf-8')
@@ -135,7 +136,7 @@ export class FilesService {
     // Check if file already exists
     try {
       await stat(safeFilePath)
-      throw new Error('File already exists')
+      throw new ConflictError('File already exists')
     } catch (err: any) {
       if (err.code !== 'ENOENT') {
         throw err
@@ -168,7 +169,7 @@ export class FilesService {
     // Check if folder already exists
     try {
       await stat(safeFolderPath)
-      throw new Error('Folder already exists')
+      throw new ConflictError('Folder already exists')
     } catch (err: any) {
       if (err.code !== 'ENOENT') {
         throw err
@@ -205,7 +206,7 @@ export class FilesService {
     // Check if new path already exists
     try {
       await stat(safeNewPath)
-      throw new Error('A file or folder with that name already exists')
+      throw new ConflictError('A file or folder with that name already exists')
     } catch (err: any) {
       if (err.code !== 'ENOENT') {
         throw err
