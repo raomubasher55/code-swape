@@ -13,6 +13,7 @@ import websocketService from './services/websocket.service.js';
 import terminalService from './services/terminal.service.js';
 // Middleware
 import { errorHandler, notFoundHandler } from './middleware/error.middleware.js';
+import { ErrorHandler } from './errors/ErrorHandler.js';
 // Utils
 import logger from './utils/logger.js';
 // Initialize Express app
@@ -32,7 +33,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 // Routes
 app.use('/', routes);
-// Error handling
+// Error handling - use custom error handler first, then fallback
+app.use(ErrorHandler.middleware);
 app.use(notFoundHandler);
 app.use(errorHandler);
 // Initialize WebSocket service

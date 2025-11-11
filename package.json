@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@radix-ui/react-context-menu": "^2.2.16",
     "cors": "^2.8.5",
     "express": "^5.1.0",
     "node-pty": "^1.0.0",

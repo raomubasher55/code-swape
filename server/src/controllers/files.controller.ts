@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express'
-import { FilesService } from '../services/FilesService.js'
+import { FilesService } from '../services/files.service.js'
 import { BadRequestError } from '../errors/AppError.js'
 import { ErrorHandler } from '../errors/ErrorHandler.js'
 
