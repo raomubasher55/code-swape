@@ -1,32 +1,33 @@
 import { Router } from 'express'
-import * as filesController from '../controllers/files.controller.js'
+import { FilesController } from '../controllers/FilesController.js'
 
 const router = Router()
+const filesController = new FilesController()
 
 /**
  * Files API Routes
- * All business logic is in controllers and services
+ * Using class-based controller with dependency injection
  */
 
 // List files and folders
-router.get('/', filesController.listFilesHandler)
+router.get('/', filesController.listFiles)
 
 // Read file content
-router.get('/content', filesController.readFileHandler)
+router.get('/content', filesController.readFile)
 
 // Save file content
-router.post('/content', filesController.saveFileHandler)
+router.post('/content', filesController.saveFile)
 
 // Create new file
-router.post('/create-file', filesController.createFileHandler)
+router.post('/create-file', filesController.createFile)
 
 // Create new folder
-router.post('/create-folder', filesController.createFolderHandler)
+router.post('/create-folder', filesController.createFolder)
 
 // Rename file or folder
-router.post('/rename', filesController.renameHandler)
+router.post('/rename', filesController.rename)
 
 // Delete file or folder
-router.delete('/', filesController.deleteHandler)
+router.delete('/', filesController.delete)
 
 export default router
